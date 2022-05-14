@@ -76,7 +76,9 @@ case "$1" in
     airflow db init
     # Here we will create an admin user if it does not alrady exist
     echo "Creating admin user with default password - change this immediately"
-
+    airflow users create -r Admin -u makcorp -p makcorp -e shekharsuman0747@gmail.com -f admin -l user
+    airflow users create -r Admin -u steve -p steve@MakCorp -e steve@makcorp.com.au -f admin -l user
+    airflow users create -r Admin -u Emmanuel -p Emmanuel@MakCorp -e emmanuel@makcorp.com.au -f admin -l user
     #airflow create_user -r Admin -u admin -p changeme_99 -e tgod.idr.dev@massiveinsights.com -f admin -l user
     if [ "$AIRFLOW__CORE__EXECUTOR" = "LocalExecutor" ] || [ "$AIRFLOW__CORE__EXECUTOR" = "SequentialExecutor" ]; then
       # With the "Local" executor it should all run in one container.

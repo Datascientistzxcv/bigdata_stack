@@ -167,7 +167,7 @@ def shareholder_data():
     df.write.format("org.elasticsearch.spark.sql").option("es.resource", '%s' % ('asx_test_shareholders_tier1')).option("es.net.http.auth.user", "elastic").option("es.net.http.auth.pass", "changeme").option("es.net.ssl", "true").option("es.nodes","http://54.252.174.27").option("es.port", "9200").option("es.nodes.wan.only","true").mode("overwrite").save()
     df.write.format("org.elasticsearch.spark.sql").option("es.resource", '%s' % ('asx_test_shareholders_tier2')).option("es.net.http.auth.user", "elastic").option("es.net.http.auth.pass", "changeme").option("es.net.ssl", "true").option("es.nodes","http://54.252.174.27").option("es.port", "9200").option("es.nodes.wan.only","true").mode("overwrite").save()
 
-with DAG('Daily_dag', description='Python DAG', start_date=datetime(2018, 11, 1), catchup=False) as dag:
+with DAG('MakCorp_Daily_dag', description='MakCorp Daily Data Load DAG', start_date=datetime(2022, 5, 21),schedule_interval="@daily", catchup=False) as dag:
     start= DummyOperator(task_id='Data_Loading_Started')
     market_data_task	= PythonOperator(task_id='ASX_MarketData', python_callable=market_data)
     projects_task	= PythonOperator(task_id='ASX_Projects', python_callable=projects_data)

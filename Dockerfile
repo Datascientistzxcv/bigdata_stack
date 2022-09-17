@@ -60,7 +60,7 @@ RUN set -ex && \
     curl -s -L --url "https://repo1.maven.org/maven2/org/apache/spark/spark-tags_2.12/3.0.0/spark-tags_2.12-3.0.0.jar" --output $SPARK_HOME/jars/spark-tags_2.12-3.0.0.jar && \
     curl -s -L --url "https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk/1.7.4/aws-java-sdk-1.7.4.jar" --output $SPARK_HOME/jars/aws-java-sdk-1.7.4.jar && \
     curl -s -L --url "https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/2.7.3/hadoop-aws-2.7.3.jar" --output $SPARK_HOME/jars/hadoop-aws-2.7.3.jar && \
-    curl -s -L --url "https://repo1.maven.org/maven2/org/elasticsearch/elasticsearch-spark-30_2.12/7.13.2/elasticsearch-spark-30_2.12-7.13.2.jar" --output $SPARK_HOME/jars/elasticsearch-spark-30_2.12-7.13.2.jar && \
+    curl -s -L --url "https://repo1.maven.org/maven2/org/elasticsearch/elasticsearch-spark-30_2.12/8.3.3/elasticsearch-spark-30_2.12-8.3.3.jar" --output $SPARK_HOME/jars/elasticsearch-spark-30_2.12-8.3.2.jar && \
     curl -s -L --url "https://repo1.maven.org/maven2/org/apache/commons/commons-collections4/4.1/commons-collections4-4.1.jar" --output $SPARK_HOME/jars/commons-collections4-4.1.jar && \
     curl -s -L --url "https://repo1.maven.org/maven2/org/apache/xmlbeans/xmlbeans/3.1.0/xmlbeans-3.1.0.jar" --output $SPARK_HOME/jars/xmlbeans-3.1.0.jar && \
     curl -s -L --url "https://repo1.maven.org/maven2/org/apache/poi/ooxml-schemas/1.4/ooxml-schemas-1.4.jar" --output $SPARK_HOME/jars/ooxml-schemas-1.4.jar && \

@@ -48,7 +48,7 @@ RUN set -ex && \
     conda clean -tipy && \
     echo "PATH=/opt/miniconda3/bin:\${PATH}" > /etc/profile.d/miniconda.sh && \
     pip3 install --no-cache pyspark==${SPARK_VERSION} && \
-    pip3 install pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} && \
+    pip3 install pip install apache-airflow[crypto,celery,postgres,hive,jdbc,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} && \
     pip3 install marshmallow==2.21.0 WTForms==2.3.3 && \
     pip3 install sqlalchemy==1.3.20 && \
     SPARK_HOME=$(python /opt/miniconda3/bin/find_spark_home.py) && \

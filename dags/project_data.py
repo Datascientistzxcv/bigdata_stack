@@ -130,6 +130,115 @@ def projects_data():
     )
     fin_df=fin_df.where(F.col("Period").like('%Q2%') | F.col("Period").like('%Q1%') | F.col("Period").like('%Q3%') | F.col("Period").like('%Q4%'))
     fin_df=fin_df.drop("FinancialsID")
+    #---------company_projects------------
+    comp_fin_df1=fin_df.selectExpr("ASX as ASXCODE","BankBalance","ExplSpend","DevProdSpend","Period")
+    company_project=spark_fil2.join(comp_fin_df1,spark_fil2.ASX==comp_fin_df1.ASXCODE,"left")
+    company_project=company_project.sort(company_project.ASX)
+    company_project=company_project.drop("ASXCODE")
+    company_project=company_project.withColumn('con', F.explode(F.array('Project Location Area'))).withColumn('con1', F.explode(F.array('Project Location Country')))   \
+                .groupby(
+                 'BankBalance',
+                 'ExplSpend',
+                 'DevProdSpend',
+                 'ERP',
+                 'ASX',
+                 'ProjectsID',
+                 'CommoditiesID',
+                 'EditDate',
+                 'CompanyID',
+                 'TSX Codes',
+                 'Project Name',
+                 'Project Stage',
+                 'Est Mine Life',
+                 'Joint Venture Info',
+                 'Cost per tonne',
+                 'Sale Price per tonne',
+                 'Net Project Value',
+                 'Open Pit',
+                 'Underground',
+                 'Project Web Page',
+                 'Resource Units',
+                 'Resource Indicated',
+                 'Resource Inferred',
+                 'Resource Measured',
+                 'Resource Actual Amount',
+                 'Mining Licence Approved',
+                 'Environmental Approval',
+                 'Project Announcement',
+                 'Project Start Date',
+                 'Quarterly Announcement',
+                 'Updated By',
+                 'Notes',
+                 'Commodity Type',
+                 'Commodity Mine Type',
+                 'Commodity Units',
+                 'Commodity Indicated',
+                 'Commodity Inferred',
+                 'Commodity Measured',
+                 'Commodity Proven Total',
+                 'Commodity Probable Total',
+                 'Commodity Proven Contained',
+                 'Commodity Probable Contained',
+                 'Commodity Proven Grade',
+                 'Commodity Probable Grade',
+                 'Commodity Total Resource',
+                 'Commodity Grade Units',
+                 'Commodity Grade Indicated',
+                 'Commodity Grade Inferred',
+                 'Commodity Grade Measured',
+                 'Commodity Cut Off',
+                 'Commodity Production Cost per Unit',
+                 'Commodity Production Qty',
+                 'Commodity Production Unit',
+                 'Commodity Production Frequency',
+                 'Commodity Production YTD',
+                 'Commodity Production Currency',
+                 'Commodity Production Grade',
+                 'Commodity Strip Ratio',
+                 'Processed Tonnes',
+                 'Processed Grade',
+                 'Processed Commodity Produced',
+                 'Processed Commodity Sold',
+                 'Proven Probable Total',
+                 'Total Ore Mined',
+                 'Total Mined Grade',
+                 'Cost Stockpile per unit',
+                 'Cost Mining per unit',
+                 'Cost Total per unit',
+                 'Commodity Notes',
+                 'Drilling Periods',
+                 'Project Location Belt',
+                 'Project Location City',
+                 'Project Location State',
+                 'Project Location Continent',
+                 'Drill Grade Low',
+                 'Drill Grade High',
+                 'Drill Width Low',
+                 'Drill Width High',
+                 'Drill Depth Low',
+                 'Drill Depth High',
+                 'Drill Length Low',
+                 'Drill Length High',
+                 'Drill Ann Date',
+                 'Drill Ann Link',
+                 'Project Updated',
+                 'Deposit Type',
+                 'Project Industry',
+                 'Project Area Size',
+                 'Drill Metres Drilled',
+                 'Drill Intercepts Low',
+                 'Drill Intercepts High',
+                 'Drill Type',
+                 'Priority Commodities',
+                 'Project Percent Ownership',
+                 'QT Expl Spend',
+                 'QT Income',
+                 'QT Prod Spend',
+                 'QT Staff Costs',
+                 'QT Staff and Admin Costs',
+                 'MarketCap',
+                 'Period'
+                 ).agg(F.collect_set('con').alias('Project Location Area'),F.collect_set('con1').alias('Project Location Country'))
     fin_df=fin_df.withColumn('con', F.explode(F.array('ProjectArea'))).withColumn('con1', F.explode(F.array('ProjectCountry')))   \
                     .groupby(
                     'EditDate',
@@ -191,13 +300,19 @@ def projects_data():
     spark_fil=spark_fil.sort(spark_fil.ASX)
     spark_fil=spark_fil.drop("ASXCODE")
     spark_fil = spark_fil.withColumn('ProjectSpending', expr("ExplSpend + DevProdSpend"))
+
+    #------------company dashboards---------
+    company_project = company_project.withColumn('ProjectSpending', abs(expr("ExplSpend + DevProdSpend")))
+    company_project=company_project.where(F.col("Period").like('%2023Q1%') | F.col("Period").like('%2022Q4%'))
+    company_project=company_project.select("ASX","ERP","BankBalance","EditDate","Priority Commodities","Project Location Area","Project Location Continent","Project Location State","Project Location Country","Project Stage","ProjectSpending","MarketCap").distinct()
+
     def priorityCommodities(text):
         if text!=None:
             splitted=str(text).strip().replace(", ",",").replace(";",",").split(",")
     #         print(text,splitted,list(filter(lambda x: x is not None and len(x) > 0 and x!='', splitted)))
             return list(filter(lambda x: x is not None and len(x) > 0 and x!='', splitted))
     priorityCommodities_udf=udf(priorityCommodities,ArrayType(StringType()))
-    # company_project.withColumn("Priority Commodities",priorityCommodities_udf(col("Priority Commodities"))).write.format("org.elasticsearch.spark.sql").option("es.resource", '%s' % ('company_projects')).option("es.net.http.auth.user", "elastic").option("es.net.http.auth.pass", "changeme").option("es.net.ssl", "true").option("es.nodes","http://54.252.174.27").option("es.port", "9200").option("es.nodes.wan.only","true").mode("overwrite").save()
+    company_project.withColumn("Priority Commodities",priorityCommodities_udf(col("Priority Commodities"))).write.format("org.elasticsearch.spark.sql").option("es.resource", '%s' % ('company_projects')).option("es.net.http.auth.user", "elastic").option("es.net.http.auth.pass", "changeme").option("es.net.ssl", "true").option("es.nodes","http://54.252.174.27").option("es.port", "9200").option("es.nodes.wan.only","true").mode("overwrite").save()
     spark_fil.withColumn("Priority Commodities",priorityCommodities_udf(col("Priority Commodities"))).write.format("org.elasticsearch.spark.sql").option("es.resource", '%s' % ('projects')).option("es.net.http.auth.user", "elastic").option("es.net.http.auth.pass", "changeme").option("es.net.ssl", "true").option("es.nodes","http://54.252.174.27").option("es.port", "9200").option("es.nodes.wan.only","true").mode("overwrite").save()
     spark_fil.withColumn("Priority Commodities",priorityCommodities_udf(col("Priority Commodities"))).write.format("org.elasticsearch.spark.sql").option("es.resource", '%s' % ('projects_tier1')).option("es.net.http.auth.user", "elastic").option("es.net.http.auth.pass", "changeme").option("es.net.ssl", "true").option("es.nodes","http://54.252.174.27").option("es.port", "9200").option("es.nodes.wan.only","true").mode("overwrite").save()
     spark_fil.withColumn("Priority Commodities",priorityCommodities_udf(col("Priority Commodities"))).write.format("org.elasticsearch.spark.sql").option("es.resource", '%s' % ('projects_tier2')).option("es.net.http.auth.user", "elastic").option("es.net.http.auth.pass", "changeme").option("es.net.ssl", "true").option("es.nodes","http://54.252.174.27").option("es.port", "9200").option("es.nodes.wan.only","true").mode("overwrite").save()
